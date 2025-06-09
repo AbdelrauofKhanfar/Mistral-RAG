@@ -1,0 +1,31 @@
+!pip install llama-cpp-python
+
+import os
+
+model_url = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+model_path = "/content/mistral-7b.Q4_K_M.gguf"
+
+if not os.path.exists(model_path):
+    !wget -O /content/mistral-7b.Q4_K_M.gguf $model_url
+
+from llama_cpp import Llama
+
+llm = Llama(
+    model_path="/content/mistral-7b.Q4_K_M.gguf",
+    n_ctx=4096,
+    n_threads=4,
+    n_gpu_layers=20
+)
+
+def ask_direct_question(question):
+    prompt = f"""### Instruction:
+Answer the following question based on your internal knowledge.
+
+Question: {question}
+### Response:"""
+    result = llm(prompt, max_tokens=300, stop=["User:", "###"])
+    return result["choices"][0]["text"].strip()
+
+question = "What were the main challenges in constructing and maintaining the CORD-19 dataset?"
+answer = ask_direct_question(question)
+print("Answer:", answer)
